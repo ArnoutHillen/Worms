@@ -36,6 +36,10 @@ public class SetupInputMode extends InputMode<PlayGameScreen> {
 		case 'S':
 			getScreen().startGame();
 			break;
+		case 'm':
+		case 'M':
+			getScreen().addMole();
+			break;
 		}
 	}
 
@@ -58,6 +62,7 @@ public class SetupInputMode extends InputMode<PlayGameScreen> {
 						+ "'W' to add a new player-controlled worm\n"
 						+ "'C' to add a new computer-controlled worm\n"
 						+ "'F' to add food\n"
+						+ "'M' to add a mole\n"
 						+ "'S' to start the game");
 	}
 

@@ -16,7 +16,7 @@ import worms.programs.IProgramFactory;
 import worms.programs.ProgramParser;
 import worms.util.*;
 
-public class Part3_FullFacadeTest {
+public class Part4_FullFacadeTest {
 
 	private static int max_score = 0;
 	private static int score = 0;
@@ -608,6 +608,27 @@ public class Part3_FullFacadeTest {
 	}
 
 	@Test
+	public void addMole_LegalCase() {
+		max_score += 2;
+		Mole moleToAdd = facade.createMole(null, new double[] { 3.0, 7.0 }, FIXTURE_DIRECTION, 0.6, "Addy Mole");
+		facade.addMole(theWorld, moleToAdd);
+		assertEquals(theWorld, facade.getWorld(moleToAdd));
+		assertTrue(facade.hasAsMole(theWorld, moleToAdd));
+		score += 2;
+	}
+
+	@Test
+	public void removeMole_LegalCase() {
+		max_score += 2;
+		Mole moleToRemove = facade.createMole(null, new double[] { 3.0, 7.0 }, FIXTURE_DIRECTION, 0.6, "Addy Mole");
+		facade.addMole(theWorld, moleToRemove);
+		facade.removeMole(theWorld, moleToRemove);
+		assertNull(facade.getWorld(moleToRemove));
+		assertFalse(facade.hasAsMole(theWorld, moleToRemove));
+		score += 2;
+	}
+
+	@Test
 	public void getAllItems_BasicCase() {
 		max_score += 3;
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 2.5, 8.0 }, FIXTURE_DIRECTION, 0.95, "Addy", null);
@@ -672,27 +693,30 @@ public class Part3_FullFacadeTest {
 	}
 
 	@Test
-	public void getActiveWorm_NoActiveGame() {
+	public void getActivePlayingObject_NoActiveGame() {
 		max_score += 1;
-		assertNull(facade.getActiveWorm(theWorld));
+		assertNull(facade.getActivePlayingObject(theWorld));
 		score += 1;
 	}
 
 	@Test
-	public void getActiveWorm_NoWormsInWorld() {
+	public void getActivePlayingObject_NoPlayingObjectsInWorld() {
 		max_score += 1;
 		facade.startGame(theWorld);
-		assertNull(facade.getActiveWorm(theWorld));
+		assertNull(facade.getActivePlayingObject(theWorld));
 		score += 1;
 	}
 
 	@Test
-	public void getActiveWorm_WormsInWorld() {
+	public void getActivePlayingObject_PlayingObjectsInWorld() {
 		max_score += 2;
-		facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "WormA", null);
-		facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "WormB", null);
+		Worm wormA = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "WormA", null);
+		Worm wormB = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "WormB", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
-		assertTrue(facade.getAllWorms(theWorld).contains(facade.getActiveWorm(theWorld)));
+		Object activePlayingObject = facade.getActivePlayingObject(theWorld);
+		assertTrue((activePlayingObject==wormA) || (activePlayingObject==wormB) ||
+				(activePlayingObject==mole) );
 		score += 2;
 	}
 
@@ -704,9 +728,21 @@ public class Part3_FullFacadeTest {
 		BigInteger nbHitPoints = facade.getNbHitPoints(worm);
 		facade.startGame(theWorld);
 		assertTrue(facade.hasActiveGame(theWorld));
-		assertEquals(worm, facade.getActiveWorm(theWorld));
+		assertEquals(worm, facade.getActivePlayingObject(theWorld));
 		assertEquals(facade.getMaxNbActionPoints(worm), facade.getNbActionPoints(worm));
 		assertEquals(nbHitPoints.add(BigInteger.TEN), facade.getNbHitPoints(worm));
+		score += 4;
+	}
+
+	@Test
+	public void startGame_SingleMoleInWorld() {
+		max_score += 4;
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
+		facade.decreaseNbActionPoints(mole, 20);
+		facade.startGame(theWorld);
+		assertTrue(facade.hasActiveGame(theWorld));
+		assertEquals(mole, facade.getActivePlayingObject(theWorld));
+		assertEquals(facade.getMaxNbActionPoints(mole), facade.getNbActionPoints(mole));
 		score += 4;
 	}
 
@@ -724,7 +760,7 @@ public class Part3_FullFacadeTest {
 		BigInteger nbHitPointsC = facade.getNbHitPoints(wormC);
 		facade.startGame(theWorld);
 		assertTrue(facade.hasActiveGame(theWorld));
-		Worm activeWorm = facade.getActiveWorm(theWorld);
+		Object activeWorm = facade.getActivePlayingObject(theWorld);
 		assertTrue(facade.getAllWorms(theWorld).contains(activeWorm));
 		if (activeWorm == wormA) {
 			assertEquals(facade.getMaxNbActionPoints(wormA), facade.getNbActionPoints(wormA));
@@ -742,9 +778,27 @@ public class Part3_FullFacadeTest {
 	}
 
 	@Test
+	public void startGame_WormsAndMolesInworld() {
+		max_score += 4;
+		Worm wormA = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "WormA", null);
+		facade.decreaseNbActionPoints(wormA, 20);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
+		facade.decreaseNbActionPoints(mole, 20);
+		facade.startGame(theWorld);
+		Object activePlayingObject = facade.getActivePlayingObject(theWorld);
+		if (activePlayingObject == wormA)
+			assertEquals(facade.getMaxNbActionPoints(wormA), facade.getNbActionPoints(wormA));
+		if (activePlayingObject == mole)
+			assertEquals(facade.getMaxNbActionPoints(mole), facade.getNbActionPoints(mole));
+		score += 4;
+	}
+
+
+	@Test
 	public void finishGame_RegularCase() {
 		max_score += 1;
 		facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "Worm", null);
+		facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
 		facade.finishGame(theWorld);
 		assertFalse(facade.hasActiveGame(theWorld));
@@ -761,57 +815,61 @@ public class Part3_FullFacadeTest {
 	}
 
 	@Test
-	public void activateNextWorm_SeveralWorms() {
-		max_score += 2;
+	public void activateNextPlayingObject_SeveralWorms() {
+		max_score += 6;
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		Worm worm2 = facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
-		Worm worm3 = facade.createWorm(theWorld, new double[] { 6.5, 7.95 }, 0.1, 1.0, "ThirdWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
-		Set<Worm> activatedWorms = new HashSet<>();
-		activatedWorms.add(facade.getActiveWorm(theWorld));
-		facade.activateNextWorm(theWorld);
-		activatedWorms.add(facade.getActiveWorm(theWorld));
-		facade.activateNextWorm(theWorld);
-		activatedWorms.add(facade.getActiveWorm(theWorld));
-		assertTrue(activatedWorms.contains(worm1));
-		assertTrue(activatedWorms.contains(worm2));
-		assertTrue(activatedWorms.contains(worm3));
-		score += 2;
+		Set<Object> activatedPlayingObjects = new HashSet<>();
+		activatedPlayingObjects.add(facade.getActivePlayingObject(theWorld));
+		facade.activateNextPlayingObject(theWorld);
+		activatedPlayingObjects.add(facade.getActivePlayingObject(theWorld));
+		facade.activateNextPlayingObject(theWorld);
+		activatedPlayingObjects.add(facade.getActivePlayingObject(theWorld));
+		assertTrue(activatedPlayingObjects.contains(worm1));
+		assertTrue(activatedPlayingObjects.contains(worm2));
+		assertTrue(activatedPlayingObjects.contains(mole));
+		score += 6;
 	}
 
 	@Test
-	public void activateNextWorm_WormsLeavingWorld() {
+	public void activateNextPLayingObject_ObjectsLeavingWorld() {
 		max_score += 4;
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		Worm worm2 = facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
-		Worm worm3 = facade.createWorm(theWorld, new double[] { 6.5, 7.95 }, 0.1, 1.0, "ThirdWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
-		Worm firstActivatedWorm = facade.getActiveWorm(theWorld);
+		Object firstActivatedWorm = facade.getActivePlayingObject(theWorld);
 		if (firstActivatedWorm == worm1) {
 			facade.removeWorm(theWorld, worm2);
-			facade.activateNextWorm(theWorld);
-			assertEquals(worm3, facade.getActiveWorm(theWorld));
+			facade.activateNextPlayingObject(theWorld);
+			assertEquals(mole, facade.getActivePlayingObject(theWorld));
 		} else if (firstActivatedWorm == worm2) {
-			facade.removeWorm(theWorld, worm3);
-			facade.activateNextWorm(theWorld);
-			assertEquals(worm1, facade.getActiveWorm(theWorld));
+			facade.removeMole(theWorld, mole);
+			facade.activateNextPlayingObject(theWorld);
+			assertEquals(worm1, facade.getActivePlayingObject(theWorld));
 		} else {
 			facade.removeWorm(theWorld, worm1);
-			facade.activateNextWorm(theWorld);
-			assertEquals(worm2, facade.getActiveWorm(theWorld));
+			facade.activateNextPlayingObject(theWorld);
+			assertEquals(worm2, facade.getActivePlayingObject(theWorld));
 		}
 		score += 4;
 	}
 
 	@Test
 	public void activateNextWorm_NoMoreActiveWorms() {
-		max_score += 1;
+		max_score += 4;
 		Worm worm = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "Worm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
 		facade.removeWorm(theWorld, worm);
-		facade.activateNextWorm(theWorld);
-		assertNull(facade.getActiveWorm(theWorld));
-		score += 1;
+		facade.activateNextPlayingObject(theWorld);
+		assertEquals(mole, facade.getActivePlayingObject(theWorld));
+		facade.removeMole(theWorld, mole);
+		facade.activateNextPlayingObject(theWorld);
+		assertNull(facade.getActivePlayingObject(theWorld));
+		score += 4;
 	}
 
 	@Test
@@ -828,12 +886,13 @@ public class Part3_FullFacadeTest {
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		Worm worm2 = facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
 		Worm worm3 = facade.createWorm(theWorld, new double[] { 6.5, 7.95 }, 0.1, 1.0, "ThirdWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
 		facade.removeWorm(theWorld, worm3);
-		facade.activateNextWorm(theWorld);
+		facade.activateNextPlayingObject(theWorld);
 		facade.removeWorm(theWorld, worm2);
-		facade.activateNextWorm(theWorld);
-		facade.activateNextWorm(theWorld);
+		facade.activateNextPlayingObject(theWorld);
+		facade.activateNextPlayingObject(theWorld);
 		assertEquals(facade.getName(worm1), facade.getWinner(theWorld));
 		score += 4;
 	}
@@ -844,14 +903,15 @@ public class Part3_FullFacadeTest {
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		Worm worm2 = facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
 		Worm worm3 = facade.createWorm(theWorld, new double[] { 6.5, 7.95 }, 0.1, 1.0, "ThirdWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		try {
 			Team someTeam = facade.createTeam(theWorld, "SomeTeam");
 			facade.addWormsToTeam(someTeam, worm1, worm3);
 			facade.startGame(theWorld);
-			facade.activateNextWorm(theWorld);
+			facade.activateNextPlayingObject(theWorld);
 			facade.removeWorm(theWorld, worm2);
-			facade.activateNextWorm(theWorld);
-			facade.activateNextWorm(theWorld);
+			facade.activateNextPlayingObject(theWorld);
+			facade.activateNextPlayingObject(theWorld);
 			assertEquals(facade.getName(someTeam), facade.getWinner(theWorld));
 			score += 4;
 		} catch (MustNotImplementException exc) {
@@ -863,6 +923,7 @@ public class Part3_FullFacadeTest {
 	public void getWinner_WorldWithoutWorms() {
 		max_score += 1;
 		facade.startGame(theWorld);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		assertNull(facade.getWinner(theWorld));
 		score += 1;
 	}
@@ -872,6 +933,7 @@ public class Part3_FullFacadeTest {
 		max_score += 1;
 		facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		facade.startGame(theWorld);
 		assertNull(facade.getWinner(theWorld));
 		score += 1;
@@ -882,6 +944,7 @@ public class Part3_FullFacadeTest {
 		max_score += 1;
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		Worm worm2 = facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		try {
 			Team teamA = facade.createTeam(theWorld, "TeamA");
 			facade.addWormsToTeam(teamA, worm1);
@@ -900,6 +963,7 @@ public class Part3_FullFacadeTest {
 		max_score += 1;
 		Worm worm1 = facade.createWorm(theWorld, new double[] { 7.95, 4.0 }, 0.1, 1.0, "FirstWorm", null);
 		facade.createWorm(theWorld, new double[] { 2.5, 7.95 }, 0.1, 1.0, "SecondWorm", null);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
 		try {
 			Team teamA = facade.createTeam(theWorld, "TeamA");
 			facade.addWormsToTeam(teamA, worm1);
@@ -2562,6 +2626,340 @@ public class Part3_FullFacadeTest {
 		score += 6;
 	}
 
+	
+	/**************
+	 * MOLE TESTS
+	 *************/
+
+	@Test
+	public void createMole_LegalCaseNoWorld() {
+		max_score += 10;
+		double[] location = new double[] { 3.0, -7.0 };
+		double direction = 3 * PI / 7;
+		double radius = 0.40;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(null, location,direction,radius,name);
+		assertNull(facade.getWorld(newMole));
+		assertEquals(location[0], facade.getLocation(newMole)[0], EPS);
+		assertEquals(location[1], facade.getLocation(newMole)[1], EPS);
+		assertEquals(direction,facade.getOrientation(newMole), EPS);
+		assertEquals(0.40, facade.getRadius(newMole), EPS);
+		assertEquals(1564.5 * (4.0 / 3.0 * PI * Math.pow(0.4, 3.0)), facade.getMass(newMole), EPS);
+		assertEquals(name,facade.getName(newMole));
+		assertEquals(round(facade.getMass(newMole)),facade.getMaxNbActionPoints(newMole));
+		assertEquals(facade.getMaxNbActionPoints(newMole),facade.getNbActionPoints(newMole));
+		score += 10;
+	}
+	
+	@Test
+	public void createMole_LegalCaseInWorld() {
+		max_score += 6;
+		double[] location = new double[] { 9.0, 3.0 };
+		double direction = 3 * PI / 7;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		assertEquals(theWorld, facade.getWorld(newMole));
+		assertTrue(facade.hasAsMole(theWorld, newMole));
+		assertEquals(location[0], facade.getLocation(newMole)[0], EPS);
+		assertEquals(location[1], facade.getLocation(newMole)[1], EPS);
+		score += 6;
+	}
+	
+	@Test
+	public void createMole_LegalName() {
+		max_score += 3;
+		double[] location = new double[] { 9.0, 3.0 };
+		double direction = 3 * PI / 7;
+		double radius = 0.60;
+		String name = "TestAx MoleYzzX";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		assertEquals(name,facade.getName(newMole));
+		score += 3;
+	}
+
+	@Test
+	public void createMole_IllegalRadius() {
+		max_score += 2;
+		double[] location = new double[] { 3.0, -7.0 };
+		double direction = 3 * PI / 7;
+		String name = "Test Mole";
+		// Radius below 0.33
+		try {
+			double radius = 0.3;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Radius above 1.0
+		try {
+			double radius = 1.1;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Negative radius
+		try {
+			double radius = -4.0;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Infinite Radius
+		try {
+			double radius = Double.POSITIVE_INFINITY;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Radius not a number
+		try {
+			double radius = Double.NaN;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		score += 2;
+	}
+
+	@Test
+	public void createMole_IllegalOrientation() {
+		max_score += 2;
+		double[] location = new double[] { 3.0, -7.0 };
+		double radius = 0.60;
+		String name = "Test Mole";
+		// Negative orientation
+		try {
+			double direction = -1.0;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Orientation too large
+		try {
+			double direction = 7.0;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Infinite Orientation
+		try {
+			double direction = Double.POSITIVE_INFINITY;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		// Orientation not a number
+		try {
+			double direction = Double.NaN;
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+		}
+		score += 2;
+	}
+
+	@Test
+	public void createMole_IllegalLocation() {
+		max_score += 4;
+		double direction = 3 * PI / 7;
+		double radius = 0.60;
+		String name = "Test Mole";
+		// Illegal x-displacement
+		try {
+			double[] location = new double[] { Double.NaN, 1.0 };
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 1;
+		}
+		// Illegal y-displacement
+		try {
+			double[] location = new double[] { 1.0, Double.NaN };
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 1;
+		}
+		// Not fully in world
+		try {
+			double[] location = new double[] { 0.5, 9.5 };
+			facade.createMole(theWorld, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 2;
+		}
+	}
+
+	@Test
+	public void createMole_IllegalName() {
+		max_score += 4;
+		double direction = 3 * PI / 7;
+		double radius = 0.60;
+		double[] location = new double[] { 3.0, -7.0 };
+		// Single word.
+		try {
+			String name = "Testmole";
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 1;
+		}
+		// More than two words.
+		try {
+			String name = "Test Mole Extra";
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 1;
+		}
+		// Words not in uppercase.
+		try {
+			String name = "Test mole";
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 1;
+		}
+		// Words having other symbols than letters
+		try {
+			String name = "Test Mole1";
+			facade.createMole(null, location, direction, radius, name);
+			fail();
+		} catch (ModelException exc) {
+			score += 1;
+		}
+	}
+	
+	@Test
+	public void move_TerminatedMole() {
+		max_score += 2;
+		double[] location = new double[] { 9.0, 3.0 };
+		double direction = 3 * PI / 7;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.terminate(newMole);
+		try {
+			facade.move(newMole);
+			fail();
+		} catch (ModelException exc) {
+			score += 2;
+		}
+	}
+	
+	@Test
+	public void move_MoleWithInsufficientActionPoints() {
+		max_score += 2;
+		double[] location = new double[] { 9.0, 3.0 };
+		double direction = 3 * PI / 7;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.decreaseNbActionPoints(newMole,facade.getNbActionPoints(newMole)-2);
+		try {
+			facade.move(newMole);
+			fail();
+		} catch (ModelException exc) {
+			score += 2;
+		}
+	}
+	
+	@Test
+	public void move_MoleInWorld() {
+		max_score += 8;
+		double[] location = new double[] { 9.2, 9.3 };
+		double direction = PI / 6;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.move(newMole);
+		double[] newLocation = facade.getLocation(newMole);
+		assertEquals(location[0]+0.2*cos(direction),newLocation[0],EPS);
+		assertEquals(location[1]+0.2*sin(direction),newLocation[1],EPS);
+		score += 8;
+	}
+	
+	@Test
+	public void move_MoleOutsideWorld() {
+		max_score += 8;
+		double[] location = new double[] { 9.3, 9.35 };
+		double direction = PI / 6;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.move(newMole);
+		double[] newLocation = facade.getLocation(newMole);
+		assertEquals(location[0]+0.2*cos(direction),newLocation[0],EPS);
+		assertEquals(location[1]+0.2*sin(direction),newLocation[1],EPS);
+		assertNull(facade.getWorld(newMole));
+		assertFalse(facade.hasAsMole(theWorld, newMole));
+		score += 8;
+	}
+	
+	@Test
+	public void eat_TerminatedMole() {
+		max_score += 1;
+		double[] location = new double[] { 9.0, 12.0 };
+		double direction = PI / 6;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(null, location, direction, radius, name);
+		facade.terminate(newMole);
+		facade.eat(newMole);
+		assertEquals(radius,facade.getRadius(newMole),EPS);
+		score += 1;
+	}
+	
+	@Test
+	public void eat_MoleNoOverlappingWorms() {
+		max_score += 4;
+		double[] location = new double[] { 9.0, 3.0 };
+		double direction = PI / 6;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.createWorm(theWorld, new double[] {7.95, 4.0}, direction, 1.0, "TheWorm", null);
+		facade.createFood(theWorld, new double[] {8.79, 3.0});
+		facade.eat(newMole);
+		assertEquals(radius,facade.getRadius(newMole),EPS);
+		score += 4;
+	}
+	
+	@Test
+	public void eat_MoleOverlappingWorms() {
+		max_score += 4;
+		double[] location = new double[] { 9.0, 3.0 };
+		double direction = PI / 6;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.createWorm(theWorld, new double[] {8.695, 3.0}, direction, 0.3, "TheWorm", null);
+		facade.createWorm(theWorld, new double[] {8.695, 3.1}, direction, 0.3, "TheWorm", null);
+		facade.eat(newMole);
+		assertEquals(3*radius/2,facade.getRadius(newMole),EPS);
+		score += 4;
+	}
+	
+	@Test
+	public void eat_ExplodingMole() {
+		max_score += 6;
+		double[] location = new double[] { 8.5, 3.0 };
+		double direction = PI / 6;
+		double radius = 0.60;
+		String name = "Test Mole";
+		Mole newMole = facade.createMole(theWorld, location, direction, radius, name);
+		facade.createWorm(theWorld, new double[] {8.695, 3.0}, direction, 0.3, "TheWorm", null);
+		facade.createWorm(theWorld, new double[] {8.695, 3.1}, direction, 0.3, "TheWorm", null);
+		facade.eat(newMole);
+		try {
+			facade.eat(newMole);
+			fail();
+		} catch (ModelException exc) {
+			score += 6;
+		}
+	}
+
 	/**************
 	 * TEAM TESTS
 	 *************/
@@ -3141,6 +3539,51 @@ public class Part3_FullFacadeTest {
 				|| (newNbHitPoints2 == 10 && newNbHitPoints2 - oldNbHitPoints2 < 2));
 		score += 4;
 	}
+	
+	@Test
+	public void castSpell_WormWithMole() {
+		max_score += 4;
+		Worm theWorm = facade.createWorm(theWorld, new double[] { 2.0, 8.695 }, FIXTURE_DIRECTION, 0.3, "WormA", theTeam);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
+		facade.castSpell(theWorld);
+		assertEquals(0.9, facade.getRadius(mole), EPS);
+		assertTrue(facade.isTerminated(theWorm));
+		score += 4;
+	}
+
+	@Test
+	public void castSpell_MoleWithFood() {
+		max_score += 4;
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
+		Food food = facade.createFood(theWorld, new double[] { 8.795, 5.5 });
+		facade.castSpell(theWorld);
+		assertTrue(facade.isPoisonous(food));
+		score += 4;
+	}
+
+	@Test
+	public void castSpell_MoleWithProjectiel() {
+		max_score += 4;
+		Worm theWorm = facade.createWorm(theWorld, new double[] { 2.0, 8.695 }, FIXTURE_DIRECTION, 0.3, "WormA", theTeam);
+		facade.fire(theWorm);
+		facade.removeWorm(theWorld, theWorm);
+		Mole mole = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test Mole");
+		facade.castSpell(theWorld);
+		assertTrue(facade.isTerminated(mole));
+		score += 4;
+	}
+
+	@Test
+	public void castSpell_MoleWithMole() {
+		max_score += 4;
+		Mole mole1 = facade.createMole(theWorld, new double[] { 9.0, 3.0 }, 3 * PI / 7, 0.60, "Test MoleA");
+		Mole mole2 = facade.createMole(theWorld, new double[] { 6.0, 8.0 }, PI, 0.80, "Test MoleB");
+		facade.castSpell(theWorld);
+		assertEquals(2,facade.getAllItems(theWorld).size());
+		score += 4;
+	}
+
+
 
 	/****************
 	 * PROGRAM TESTS
@@ -3613,6 +4056,94 @@ public class Part3_FullFacadeTest {
 		assertArrayEquals(expecteds, results.toArray());
 		assertEquals(1.5, facade.getOrientation(worm1), EPS);
 		score += 10;
+	}
+
+	@Test
+	public void testRepeatStatement_NonDoubleExpression() throws ModelException {
+		max_score += 4;
+		Worm worm1 = facade.createWorm(theWorld, new double[] { 2.0, 7.5 }, 0.0, 1.5, "WormA", theTeam);
+		String code = "repeat self: print 4.0;";
+		Program program = ProgramParser.parseProgramFromString(code, programFactory);
+		System.out.println(program.getBody());
+		facade.loadProgramOnWorm(worm1, program, actionHandler);
+		try {
+			facade.executeProgram(worm1);
+			fail();
+		} catch (ModelException exc) {
+			score += 4;
+		}
+	}
+
+	@Test
+	public void testRepeatStatement_ChangesToNbExecutions() throws ModelException {
+		max_score += 8;
+		Worm worm1 = facade.createWorm(theWorld, new double[] { 2.0, 7.5 }, 0.0, 1.5, "WormA", theTeam);
+		String code = "print 1.0; t := 3.0; repeat t: { t := t + 2.0; print 2.0; } print 10.0;";
+		Program program = ProgramParser.parseProgramFromString(code, programFactory);
+		facade.loadProgramOnWorm(worm1, program, actionHandler);
+		List<Object> results = facade.executeProgram(worm1);
+		Object[] expecteds = { 1.0, 2.0, 2.0, 2.0, 10.0 };
+		assertArrayEquals(expecteds, results.toArray());
+		score += 8;
+	}
+
+	@Test
+	public void testRepeatSatement_BodyNonInterruptable() throws ModelException {
+		max_score += 18;
+		Worm worm1 = facade.createWorm(theWorld, new double[] { 2.0, 7.5 }, 0.0, 1.5, "WormA", theTeam);
+		String code = "print 1.0; t := 3.0; v := 3.0; repeat t: { v := v + 1.0; print v; } print 10.0;";
+		Program program = ProgramParser.parseProgramFromString(code, programFactory);
+		facade.loadProgramOnWorm(worm1, program, actionHandler);
+		List<Object> results = facade.executeProgram(worm1);
+		Object[] expecteds = { 1.0, 4.0, 5.0, 6.0, 10.0 };
+		assertArrayEquals(expecteds, results.toArray());
+		score += 18;
+	}
+
+	@Test
+	public void testRepeatSatement_BodyInterruptable() throws ModelException {
+		max_score += 25;
+		Worm worm1 = facade.createWorm(theWorld, new double[] { 2.0, 7.5 }, 0.0, 1.5, "WormA", theTeam);
+		String code = "print 1.0; v := 0.0; t := 5.0; repeat t { v := v + 0.1; print v; turn v; } print 1.0;";
+		Program program = ProgramParser.parseProgramFromString(code, programFactory);
+		facade.loadProgramOnWorm(worm1, program, actionHandler);
+		facade.decreaseNbActionPoints(worm1, facade.getNbActionPoints(worm1));
+		List<Object> results = facade.executeProgram(worm1);
+		assertNull(results);
+		// Finishing the first two iterations.
+		facade.decreaseNbActionPoints(worm1, -3);
+		results = facade.executeProgram(worm1);
+		assertNull(results);
+		// Finishing the next two iterations.
+		facade.decreaseNbActionPoints(worm1, -7);
+		results = facade.executeProgram(worm1);
+		assertNull(results);
+		// Finishing program execution.
+		facade.decreaseNbActionPoints(worm1, -facade.getMaxNbActionPoints(worm1));
+		List<Object> finalResults = facade.executeProgram(worm1);
+		double[] expecteds = { 1.0, 0.1, 0.2, 0.3, 0.4, 0.5, 1.0 };
+		IntStream.range(0, expecteds.length)
+				.forEach(i -> org.junit.Assert.assertEquals(expecteds[i], (Double) finalResults.get(i), EPS));
+		score += 25;
+	}
+
+	@Test
+	public void testBreakSatement_DirectlyInRepeatBody() throws ModelException {
+		max_score += 14;
+		Worm worm1 = facade.createWorm(theWorld, new double[] { 2.0, 7.5 }, 0.0, 1.5, "WormA", theTeam);
+		String code = "print 1.0; v := 1.0; t := 10; repeat t { v := v + 1.0; print v; if 4.5 < v break; } print 10.0;";
+		try {
+			Program program = ProgramParser.parseProgramFromString(code, programFactory);
+			if (program == null)
+				throw new MustNotImplementException();
+			facade.loadProgramOnWorm(worm1, program, actionHandler);
+			List<Object> results = facade.executeProgram(worm1);
+			Object[] expecteds = { 1.0, 2.0, 3.0, 4.0, 5.0, 10.0 };
+			assertArrayEquals(expecteds, results.toArray());
+			score += 14;
+		} catch (MustNotImplementException exc) {
+			max_score -= 14;
+		}
 	}
 
 	@Test
@@ -4126,6 +4657,34 @@ public class Part3_FullFacadeTest {
 		} catch (ModelException exc) {
 			score += 2;
 		}
+	}
+
+	@Test
+	public void testConditionalExpression_NonBooleanCondition() throws ModelException {
+		max_score += 2;
+		Worm theWorm = facade.createWorm(theWorld, new double[] { 7.5, 3.505 }, 3 * PI / 2.0, 1.5, "Worm", null);
+		String code = "print null ? self : 4.0;";
+		Program program = ProgramParser.parseProgramFromString(code, programFactory);
+		facade.loadProgramOnWorm(theWorm, program, actionHandler);
+		try {
+			facade.executeProgram(theWorm);
+			fail();
+		} catch (ModelException exc) {
+			score += 2;
+		}
+	}
+
+	@Test
+	public void testConditionalExpression_LegalCases() throws ModelException {
+		max_score += 12;
+		Worm theWorm = facade.createWorm(theWorld, new double[] { 7.5, 3.505 }, 3 * PI / 2.0, 1.5, "Worm", null);
+		String code = "{ print 2.0 < 1.0 ? 3.0 : 4.0; print 1.0 < 2.0 ? 3.0 : 4.0; }";
+		Program program = ProgramParser.parseProgramFromString(code, programFactory);
+		facade.loadProgramOnWorm(theWorm, program, actionHandler);
+		List<Object> results = facade.executeProgram(theWorm);
+		Object[] expecteds = { 4.0, 3.0 };
+		assertArrayEquals(expecteds, results.toArray());
+		score += 12;
 	}
 
 	@Test

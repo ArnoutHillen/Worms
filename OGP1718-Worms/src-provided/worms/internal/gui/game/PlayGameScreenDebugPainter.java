@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import worms.internal.gui.GUIUtils;
 import worms.internal.gui.Level;
 import worms.internal.gui.game.sprites.FoodSprite;
+import worms.internal.gui.game.sprites.MoleSprite;
 import worms.internal.gui.game.sprites.WormSprite;
 import worms.model.World;
 
@@ -181,6 +182,19 @@ public class PlayGameScreenDebugPainter extends PlayGameScreenPainter {
 		currentGraphics.draw(circle);
 	}
 
+	@Override
+	protected void paintMole(MoleSprite sprite) {
+		super.paintMole(sprite);
+		double r = sprite.getRadius();
+		double x = sprite.getCenterX();
+		double y = sprite.getCenterY();
+
+		currentGraphics.setColor(Color.ORANGE);
+		Shape circle = GUIUtils.circleAt(x, y, getScreen()
+				.worldToScreenDistance(r));
+		currentGraphics.draw(circle);
+	}
+	
 	protected void drawOutline(WormSprite sprite) {
 		double r = sprite.getRadius();
 		double x = sprite.getCenterX();

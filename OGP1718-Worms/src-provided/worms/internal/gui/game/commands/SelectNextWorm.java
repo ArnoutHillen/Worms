@@ -25,7 +25,7 @@ public class SelectNextWorm extends InstantaneousCommand {
 	@Override
 	protected void doStartExecution() {
 		try {
-			getFacade().activateNextWorm(getWorld());
+			getFacade().activateNextPlayingObject(getWorld());
 		} catch (ModelException e) {
 			cancelExecution(e);
 		}

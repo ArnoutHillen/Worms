@@ -43,6 +43,12 @@ public interface WormsProgramVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitWhileStatement(WormsProgramParser.WhileStatementContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link WormsProgramParser#repeatStatement}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitRepeatStatement(WormsProgramParser.RepeatStatementContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link WormsProgramParser#ifStatement}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -226,6 +232,13 @@ public interface WormsProgramVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitConstantExpression(WormsProgramParser.ConstantExpressionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code conditionalExpression}
+	 * labeled alternative in {@link WormsProgramParser#expression}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitConditionalExpression(WormsProgramParser.ConditionalExpressionContext ctx);
 	/**
 	 * Visit a parse tree produced by the {@code searchObjExpression}
 	 * labeled alternative in {@link WormsProgramParser#expression}.

@@ -28,6 +28,10 @@ import worms.util.MustNotImplementException;
  * representing a world</li>
  * <li>a class <code>Food</code> in the package <code>worms.model</code> for
  * representing a food ration</li>
+ * <li>a class <code>Projectile</code> in the package <code>worms.model</code> for
+ * representing a projectiel</li>
+ * <li>a class <code>Mole</code> in the package <code>worms.model</code> for
+ * representing a mole</li>
  * <li>a class <code>Team</code> in the package <code>worms.model</code> for
  * representing a team (only for teams of 2 students)</li>
  * <li>a class <code>Facade</code> in the package <code>worms.facade</code> that
@@ -175,7 +179,22 @@ public interface IFacade {
 	 * Remove the given portion of food from the given world.
 	 */
 	void removeFood(World world, Food food) throws ModelException;
+	
+	/**
+	 * Check whether the given world contains the given mole.
+	 */
+	boolean hasAsMole(World world, Mole mole) throws ModelException;
 		
+	/**
+	 * Add the given mole to the given world.
+	 */
+	void addMole(World world, Mole mole) throws ModelException;
+		
+	/**
+	 * Remove the given portion of food from the given world.
+	 */
+	void removeMole(World world, Mole mole) throws ModelException;
+	
 	/**
 	 * Return a collection filled with all the worms and all the
 	 * portions of food in the given world.
@@ -193,11 +212,11 @@ public interface IFacade {
 	boolean hasActiveGame(World world) throws ModelException;
 
 	/**
-	 * Return the active worm in the given world.
-	 *   - The active worm is the worm whose turn it is to perform
+	 * Return the active playing object in the given world.
+	 *   - The active playing object is the playing object whose turn it is to perform
 	 *     player-controlled actions.
 	 */
-	Worm getActiveWorm(World world) throws ModelException;
+	Object getActivePlayingObject(World world) throws ModelException;
 	
 	/**
 	 * Start a new game in the given world.
@@ -212,7 +231,7 @@ public interface IFacade {
 	/**
 	 * Activate the next worm in the given world.
 	 */
-	void activateNextWorm(World world) throws ModelException;
+	void activateNextPlayingObject(World world) throws ModelException;
 
 	/**
 	 * Return the name of a single worm if that worm is the winner, or the name
@@ -506,9 +525,99 @@ public interface IFacade {
 	 *     terrain nor a worm.
 	 */
 	void jump(Projectile projectile, double jumpTimeStep) throws ModelException;
+
+
+
+	/************
+	 * MOLE
+	 ************/
+	
+	/**
+	 * Create and return a new mole that is positioned at the given location in
+	 * the given world, that looks in the given direction, that has the given radius
+	 * and has the given name.
+	 *   - If the given world is not effective, the new worm is simply positioned
+	 *     at the given location.
+	 */
+	Mole createMole(World world, double[] location, double direction, double radius,
+			String name) throws ModelException;
+	
+	/**
+	 * Terminate the given mole.
+	 */
+	void terminate(Mole mole) throws ModelException;
+	
+	/**
+	 * Check whether the given mole is terminated.
+	 */
+	boolean isTerminated(Mole mole) throws ModelException;
+
+	/**
+	 * Return the current location of the given mole.
+	 *   - The resulting array contains the the x-coordinate of the given mole
+	 *     followed by its y-coordinate.
+	 */
+	double[] getLocation(Mole mole) throws ModelException;
+
+	/**
+	 * Return the current orientation of the given mole (in radians).
+	 */
+	double getOrientation(Mole mole) throws ModelException;
+
+	/**
+	 * Return the radius of the given mole.
+	 */
+	double getRadius(Mole mole) throws ModelException;
+
+	/**
+	 * Return the mass of the given mole.
+	 */
+	double getMass(Mole mole) throws ModelException;
+
+	/**
+	 * Return the maximum number of action points of the given mole.
+	 */
+	long getMaxNbActionPoints(Mole mole) throws ModelException;
+
+	/**
+	 * Return the current number of action points of the given mole.
+	 */
+	long getNbActionPoints(Mole mole) throws ModelException;
+
+	/**
+	 * Decrease the current number of action points of the given mole
+	 * with the given delta.
+	 *   - The given delta may be negative.
+	 */
+	void decreaseNbActionPoints(Mole mole, long delta) throws ModelException;
+
+	/**
+	 * Return the name the given mole.
+	 */
+	String getName(Mole mole) throws ModelException;
+
+	/**
+	 * Return the world to which this mole belongs
+	 */
+	World getWorld(Mole mole) throws ModelException;
+	
+//
+//	/**
+//	 * Turn the given worm by the given angle.
+//	 */
+//	void turn(Worm worm, double angle);
+
+	/**
+	 * Move the given mole according to the rules in the assignment.
+	 */
+	void move(Mole mole) throws ModelException;
+
+	/**
+	 * Make the given mole eat.
+	 */
+	void eat(Mole mole) throws ModelException;
 	
 
-	
 	
 	
 	/********

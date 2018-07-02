@@ -11,6 +11,7 @@ import worms.programs.IProgramFactory;
 import worms.programs.SourceLocation;
 import worms.programs.internal.parser.generated.WormsProgramBaseVisitor;
 import worms.programs.internal.parser.generated.WormsProgramLexer;
+import worms.programs.internal.parser.generated.WormsProgramParser;
 import worms.programs.internal.parser.generated.WormsProgramParser.AddSubExpressionContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.AndOrExpressionContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.AssignmentStatementContext;
@@ -44,6 +45,7 @@ import worms.programs.internal.parser.generated.WormsProgramParser.PrintStatemen
 import worms.programs.internal.parser.generated.WormsProgramParser.ProceduredefContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.ProgramContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.ReadVariableExpressionContext;
+import worms.programs.internal.parser.generated.WormsProgramParser.RepeatStatementContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.SameTeamExpressionContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.SearchObjExpressionContext;
 import worms.programs.internal.parser.generated.WormsProgramParser.SelfExpressionContext;
@@ -90,6 +92,12 @@ public class ParserVisitor<E, S, P, Prg> extends WormsProgramBaseVisitor<Void> {
 		@Override
 		public S visitWhileStatement(WhileStatementContext ctx) {
 			return getFactory().createWhileStatement(expressionVisitor.visit(ctx.condition),
+					statementVisitor.visit(ctx.body), toSourceLocation(ctx));
+		}
+
+		@Override
+		public S visitRepeatStatement(RepeatStatementContext ctx) {
+			return getFactory().createRepeatStatement(expressionVisitor.visit(ctx.value),
 					statementVisitor.visit(ctx.body), toSourceLocation(ctx));
 		}
 
@@ -280,6 +288,11 @@ public class ParserVisitor<E, S, P, Prg> extends WormsProgramBaseVisitor<Void> {
 				throw new IllegalArgumentException("Unknown operand: " + ctx.op);
 			}
 
+		}
+
+		@Override
+		public E visitConditionalExpression(WormsProgramParser.ConditionalExpressionContext ctx) {
+			return getFactory().createConditionalExpression(expressionVisitor.visit(ctx.condition), expressionVisitor.visit(ctx.thenExpr), expressionVisitor.visit(ctx.elseExpr), toSourceLocation(ctx));
 		}
 
 		@Override

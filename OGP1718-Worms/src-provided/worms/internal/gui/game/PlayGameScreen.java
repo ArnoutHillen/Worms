@@ -23,9 +23,11 @@ import worms.internal.gui.game.modes.EnteringNameMode;
 import worms.internal.gui.game.modes.GameOverMode;
 import worms.internal.gui.game.modes.SetupInputMode;
 import worms.internal.gui.game.sprites.FoodSprite;
+import worms.internal.gui.game.sprites.MoleSprite;
 import worms.internal.gui.game.sprites.WormSprite;
 import worms.internal.gui.messages.MessageType;
 import worms.model.Food;
+import worms.model.Mole;
 import worms.model.Team;
 import worms.model.World;
 import worms.model.Worm;
@@ -78,7 +80,7 @@ public class PlayGameScreen extends Screen {
 			repaint();
 		}
 	};
-	private Worm currentWorm;
+	private Object currentObject;
 
 	private void runGameLoop() {
 		Timer timer = new Timer();
@@ -107,7 +109,7 @@ public class PlayGameScreen extends Screen {
 		for (Sprite<?> sprite : sprites) {
 			sprite.update();
 		}
-		currentWorm = getFacade().getActiveWorm(getWorld());
+		currentObject = getFacade().getActivePlayingObject(getWorld());
 	}
 
 	protected void removeInactiveSprites() {
@@ -120,6 +122,7 @@ public class PlayGameScreen extends Screen {
 
 	protected void addNewSprites() {
 		addNewWormSprites();
+		addNewMoleSprites();
 		addNewFoodSprites();
 	}
 
@@ -130,6 +133,18 @@ public class PlayGameScreen extends Screen {
 				WormSprite sprite = getWormSprite(worm);
 				if (sprite == null) {
 					createWormSprite(worm);
+				}
+			}
+		}
+	}
+
+	private void addNewMoleSprites() {
+		Collection<Mole> moles = getAll(Mole.class);
+		if (moles != null) {
+			for (Mole mole : moles) {
+				MoleSprite sprite = getSpriteOfTypeFor(MoleSprite.class, mole);
+				if (sprite == null) {
+					createMoleSprite(mole);
 				}
 			}
 		}
@@ -154,6 +169,11 @@ public class PlayGameScreen extends Screen {
 
 	private void createFoodSprite(Food food) {
 		FoodSprite sprite = new FoodSprite(this, food);
+		addSprite(sprite);
+	}
+
+	private void createMoleSprite(Mole mole) {
+		MoleSprite sprite = new MoleSprite(this, mole);
 		addSprite(sprite);
 	}
 
@@ -184,8 +204,8 @@ public class PlayGameScreen extends Screen {
 		return result;
 	}
 
-	public <ObjectType, SpriteType extends Sprite<ObjectType>> SpriteType getSpriteOfTypeFor(
-			Class<SpriteType> type, ObjectType object) {
+	public <ObjectType, SpriteType extends Sprite<ObjectType>> SpriteType getSpriteOfTypeFor(Class<SpriteType> type,
+			ObjectType object) {
 		if (object == null) {
 			return null;
 		}
@@ -202,10 +222,10 @@ public class PlayGameScreen extends Screen {
 	}
 
 	public void move() {
-		Worm worm = getSelectedWorm();
-
-		if (worm != null) {
-			userActionHandler.move(worm);
+		if (getSelectedObject() instanceof Worm) {
+			userActionHandler.move((Worm) getSelectedObject());
+		} else if (getSelectedObject() instanceof Mole) {
+			userActionHandler.move((Mole) getSelectedObject());
 		}
 	}
 
@@ -216,15 +236,15 @@ public class PlayGameScreen extends Screen {
 		}
 
 	}
-	
-	public void eat() {
-		Worm worm = getSelectedWorm();
-		if (worm != null) {
-			userActionHandler.eat(worm);
-		}
 
+	public void eat() {
+		if (getSelectedObject() instanceof Worm) {
+			userActionHandler.eat((Worm) getSelectedObject());
+		} else if (getSelectedObject() instanceof Mole) {
+			userActionHandler.eat((Mole) getSelectedObject());
+		}
 	}
-	
+
 	public void fire() {
 		Worm worm = getSelectedWorm();
 		if (worm != null) {
@@ -251,7 +271,13 @@ public class PlayGameScreen extends Screen {
 	}
 
 	public synchronized Worm getSelectedWorm() {
-		return currentWorm;
+		if (currentObject instanceof Worm)
+			return (Worm) currentObject;
+		return null;
+	}
+
+	public synchronized Object getSelectedObject() {
+		return currentObject;
 	}
 
 	@Override
@@ -390,8 +416,8 @@ public class PlayGameScreen extends Screen {
 	}
 
 	public void addEmptyTeam() {
-		switchInputMode(
-			new EnteringNameMode("Enter team name: ", this, getCurrentInputMode(), newName -> userActionHandler.addEmptyTeam(newName)));
+		switchInputMode(new EnteringNameMode("Enter team name: ", this, getCurrentInputMode(),
+				newName -> userActionHandler.addEmptyTeam(newName)));
 	}
 
 	private Team lastTeam;
@@ -399,7 +425,7 @@ public class PlayGameScreen extends Screen {
 	public void setLastCreatedTeam(Team team) {
 		this.lastTeam = team;
 	}
-	
+
 	public Team getLastCreatedTeam() {
 		return lastTeam;
 	}
@@ -407,7 +433,7 @@ public class PlayGameScreen extends Screen {
 	public void addPlayerControlledWorm() {
 		userActionHandler.addNewWorm(false);
 	}
-	
+
 	public void addComputerControlledWorm() {
 		userActionHandler.addNewWorm(true);
 	}
@@ -459,6 +485,10 @@ public class PlayGameScreen extends Screen {
 
 	public void activateWizard() {
 		userActionHandler.activateWizard();
+	}
+
+	public void addMole() {
+		userActionHandler.addNewMole();
 	}
 
 }

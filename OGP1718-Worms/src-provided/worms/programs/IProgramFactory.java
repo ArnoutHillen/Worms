@@ -156,6 +156,11 @@ public interface IProgramFactory<E, S, P, Program> {
 	public S createWhileStatement(E condition, S body, SourceLocation sourceLocation) throws ModelException;
 
 	/**
+	 * Create a repeat statement involving the given expression and given body.
+	 */
+	public S createRepeatStatement(E expression, S body, SourceLocation sourceLocation) throws ModelException;
+
+	/**
 	 * Create a break statement.
 	 */
 	public default S createBreakStatement(SourceLocation sourceLocation)
@@ -337,6 +342,13 @@ public interface IProgramFactory<E, S, P, Program> {
 		throw new MustNotImplementException();
 	}
 
+	/**
+	 * Returns an expression that yields the value of the then-expression if the
+	 * evaluation of the condition yields true, and to the value of the else-expression
+	 * if the evaluation of the condition yields false.
+	 */
+	public E createConditionalExpression(E condition, E thenPart, E elsePart, SourceLocation sourceLocation)
+			throws ModelException;
 	/**
 	 * Returns an expression that evaluates to the position along the x-axis of
 	 * the game object to which the given expression evaluates.

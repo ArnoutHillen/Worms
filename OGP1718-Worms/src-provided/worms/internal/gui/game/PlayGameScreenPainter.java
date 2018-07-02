@@ -17,6 +17,7 @@ import worms.internal.gui.GUIUtils;
 import worms.internal.gui.GameState;
 import worms.internal.gui.Level;
 import worms.internal.gui.game.sprites.FoodSprite;
+import worms.internal.gui.game.sprites.MoleSprite;
 import worms.internal.gui.game.sprites.ProjectileSprite;
 import worms.internal.gui.game.sprites.WormSprite;
 import worms.model.World;
@@ -95,6 +96,13 @@ public class PlayGameScreenPainter extends AbstractPainter<PlayGameScreen> {
 		for (FoodSprite sprite : getScreen().getSpritesOfType(FoodSprite.class)) {
 			paintFood(sprite);
 		}
+		
+		for (MoleSprite sprite : getScreen().getSpritesOfType(MoleSprite.class)) {
+			if (sprite.getMole() == getScreen().getSelectedObject()) {
+				drawSelection(sprite);
+			}
+			paintMole(sprite);
+		}
 
 		for (WormSprite sprite : getScreen().getSpritesOfType(WormSprite.class)) {
 			if (sprite.getWorm() == getScreen().getSelectedWorm()) {
@@ -117,6 +125,11 @@ public class PlayGameScreenPainter extends AbstractPainter<PlayGameScreen> {
 
 	protected void paintFood(FoodSprite sprite) {
 		sprite.draw(currentGraphics);
+	}
+	
+	protected void paintMole(MoleSprite sprite) {
+		sprite.draw(currentGraphics);
+		drawDirectionIndicator(sprite);
 	}
 
 	protected void paintLevel() {
@@ -233,29 +246,33 @@ public class PlayGameScreenPainter extends AbstractPainter<PlayGameScreen> {
 		currentGraphics.draw(hitpointsBar);
 	}
 
-	protected void drawSelection(WormSprite sprite) {
+	protected void drawSelection(Sprite<?> sprite) {
 		double x = sprite.getCenterX();
 		double y = sprite.getCenterY();
 		double spriteHeight = Math.max(sprite.getWidth(currentGraphics),
 				sprite.getHeight(currentGraphics));
 
-		if (sprite.isAtImpassableTerrain()) {
-			currentGraphics.setColor(SELECTION_IMPASSABLE_FILL_COLOR);
-		} else {
-			currentGraphics.setColor(SELECTION_FILL_COLOR);
-		}
-
+		currentGraphics.setColor(SELECTION_FILL_COLOR);
+		
 		Shape circle = GUIUtils.circleAt(x, y, spriteHeight / 2);
 		currentGraphics.fill(circle);
 	}
 
 	protected void drawDirectionIndicator(WormSprite sprite) {
+		drawDirectionIndicator(sprite, sprite.getOrientation());
+	}
+	
+	protected void drawDirectionIndicator(MoleSprite sprite) {
+		drawDirectionIndicator(sprite, sprite.getOrientation());
+	}
+	
+	protected void drawDirectionIndicator(Sprite<?> sprite, double orientation) {
 		double x = sprite.getCenterX();
 		double y = sprite.getCenterY();
 		double distance = Math.max(sprite.getWidth(currentGraphics),
 				sprite.getHeight(currentGraphics)) / 2;
 		distance += DIRECTION_INDICATOR_SIZE / 2;
-		double direction = GUIUtils.restrictDirection(sprite.getOrientation());
+		double direction = GUIUtils.restrictDirection(orientation);
 
 		currentGraphics.setColor(DIRECTION_MARKER_COLOR);
 

@@ -23,6 +23,7 @@ proceduredef: DEF procname=IDENTIFIER COLON?
 
 statement:    assignmentStatement
             | whileStatement
+            | repeatStatement
             | ifStatement    
             | printStatement
             | sequenceStatement
@@ -35,6 +36,10 @@ assignmentStatement:   variableName=IDENTIFIER ASSIGN value=expression ';'
 ;
 
 whileStatement:    WHILE condition=expression COLON?
+                      body=statement
+;
+
+repeatStatement:   REPEAT value=expression COLON?
                       body=statement
 ;
 
@@ -81,6 +86,7 @@ expression:   variable=IDENTIFIER #readVariableExpression
             | SIN LEFT_PAREN expr=expression RIGHT_PAREN #sinExpression
             | COS LEFT_PAREN expr=expression RIGHT_PAREN #cosExpression
             | NOT expr=expression  #notExpression
+            | condition=expression QUESTION_MARK thenExpr=expression COLON elseExpr=expression #conditionalExpression
             | GETX expr=expression #getXExpression
             | GETY expr=expression #getYExpression
             | GETRADIUS expr=expression #getRadiusExpression
@@ -145,6 +151,7 @@ INVOKE:    'invoke';
 THEN:      'then';
 ELSE:      'else';
 WHILE:     'while';
+REPEAT:    'repeat';
 BREAK:     'break';
 PRINT:     'print';
 
@@ -185,6 +192,7 @@ RIGHT_PAREN: ')';
 LEFT_BRACE: '{';
 RIGHT_BRACE: '}';
 COLON: ':';
+QUESTION_MARK: '?';
 
 // ------------------------------------------------------------------------
 // --- Syntactical Ballast ------------------------------------------------

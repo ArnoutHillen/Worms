@@ -7,18 +7,22 @@ import worms.facade.IFacade;
 import worms.internal.gui.GameState;
 import worms.internal.gui.game.commands.ActivateWizard;
 import worms.internal.gui.game.commands.AddNewFood;
+import worms.internal.gui.game.commands.AddNewMole;
 import worms.internal.gui.game.commands.AddNewTeam;
 import worms.internal.gui.game.commands.AddNewWorm;
 import worms.internal.gui.game.commands.Command;
 import worms.internal.gui.game.commands.Eat;
+import worms.internal.gui.game.commands.EatMole;
 import worms.internal.gui.game.commands.Fire;
 import worms.internal.gui.game.commands.Jump;
 import worms.internal.gui.game.commands.Move;
+import worms.internal.gui.game.commands.MoveMole;
 import worms.internal.gui.game.commands.Rename;
 import worms.internal.gui.game.commands.SelectNextWorm;
 import worms.internal.gui.game.commands.StartGame;
 import worms.internal.gui.game.commands.Turn;
 import worms.internal.gui.messages.MessageType;
+import worms.model.Mole;
 import worms.model.Worm;
 
 class DefaultActionHandler implements IActionHandler {
@@ -54,6 +58,10 @@ class DefaultActionHandler implements IActionHandler {
 	@Override
 	public boolean move(Worm worm) {
 		return executeCommand(new Move(getFacade(), worm, getScreen()));
+	}
+	
+	public boolean move(Mole mole) {
+		return executeCommand(new MoveMole(getFacade(), mole, getScreen()));
 	}
 
 	@Override
@@ -95,6 +103,10 @@ class DefaultActionHandler implements IActionHandler {
 		return executeCommand(new Eat(getFacade(), worm, getScreen()));
 	}
 	
+	public boolean eat(Mole mole) {
+		return executeCommand(new EatMole(getFacade(), mole, getScreen()));
+	}
+	
 	@Override
 	public boolean fire(Worm worm) {
 		return executeCommand(new Fire(getFacade(), worm, getScreen()));
@@ -110,6 +122,10 @@ class DefaultActionHandler implements IActionHandler {
 
 	public void addNewWorm(boolean withProgram) {
 		executeCommand(new AddNewWorm(getFacade(), withProgram, getScreen()));
+	}
+	
+	public void addNewMole() {
+		executeCommand(new AddNewMole(getFacade(), getScreen()));
 	}
 
 	public void addEmptyTeam(String name) {
